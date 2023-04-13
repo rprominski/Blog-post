@@ -10,11 +10,14 @@ class UserService {
     }
 
     void changeUsername(UUID userId, String updatedUsername) {
-        User user = userRepository.getById(userId);
-        if (!user.canChangeUsername()) {
-            // error handling logic here
-        }
-        user.changeUsername(updatedUsername);
-        userRepository.save(user);
+        userRepository.getById(userId)
+                .canChangeName()
+                .map(updatableUser -> updatableUser.changeUsername(updatedUsername))
+                .ifPresentOrElse(
+                        userRepository::save,
+                        () -> {
+                            throw new UserUpdateFailed("I don't know, some error");
+                        }
+                );
     }
 }
